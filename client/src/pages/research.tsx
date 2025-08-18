@@ -38,7 +38,6 @@ const publicationSchema = z.object({
 const researchAreaSchema = z.object({
   name: z.string().min(1, "연구분야 이름을 입력해주세요"),
   description: z.string().optional(),
-  parentId: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal("")),
   order: z.number().default(0),
 });
@@ -631,59 +630,157 @@ export default function ResearchPage() {
               {publications.map((publication) => (
                 <Card
                   key={publication.id}
-                  className="hover:shadow-lg transition-shadow"
+                  className="group hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer relative overflow-hidden"
                   data-testid={`card-publication-${publication.id}`}
                 >
-                  <CardContent className="p-8">
+                  <CardContent className="p-8 relative">
+                    {/* Background overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                    
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <Badge
                           variant="secondary"
-                          className="text-xs font-semibold"
+                          className="text-xs font-semibold group-hover:bg-blue-100 group-hover:text-blue-800 transition-colors"
                           data-testid={`badge-publication-type-${publication.id}`}
                         >
                           {publication.type}
                         </Badge>
-                        <span className="text-gray-500 text-sm" data-testid={`text-publication-year-${publication.id}`}>
+                        <span className="text-gray-500 text-sm group-hover:text-gray-700 transition-colors" data-testid={`text-publication-year-${publication.id}`}>
                           {publication.year}
                         </span>
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {publication.url && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            asChild
+                            className="hover:bg-blue-100"
+                            data-testid={`button-publication-url-${publication.id}`}
+                          >
+                            <a href={publication.url} target="_blank" rel="noopener noreferrer" title="Visit Publication">
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        )}
                         {publication.pdfUrl && (
                           <Button
                             variant="ghost"
                             size="sm"
                             asChild
+                            className="hover:bg-red-100"
                             data-testid={`button-publication-pdf-${publication.id}`}
                           >
-                            <a href={publication.pdfUrl} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="h-4 w-4" />
+                            <a href={publication.pdfUrl} target="_blank" rel="noopener noreferrer" title="Download PDF">
+                              <Download className="h-4 w-4" />
                             </a>
                           </Button>
                         )}
                       </div>
                     </div>
-                    <h3
-                      className="text-xl font-bold text-gray-900 mb-3"
-                      data-testid={`text-publication-title-${publication.id}`}
-                    >
-                      {publication.title}
-                    </h3>
-                    {publication.authors && publication.authors.length > 0 && (
-                      <p className="text-gray-600 mb-4" data-testid={`text-publication-authors-${publication.id}`}>
-                        {publication.authors.map(author => author.name).join(", ")}
+                    
+                    <div className={`grid ${publication.imageUrl ? 'lg:grid-cols-3 gap-6' : 'grid-cols-1'}`}>
+                      {/* Image Section */}
+                      {publication.imageUrl && (
+                        <div className="lg:col-span-1">
+                          <div className="relative aspect-square rounded-lg overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
+                            <img
+                              src={publication.imageUrl}
+                              alt={`${publication.title} illustration`}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                              data-testid={`img-publication-${publication.id}`}
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300" />
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Content Section */}
+                      <div className={`${publication.imageUrl ? 'lg:col-span-2' : 'col-span-1'} space-y-4`}>
+                        <h3
+                          className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-900 transition-colors"
+                          data-testid={`text-publication-title-${publication.id}`}
+                        >
+                          {publication.title}
+                        </h3>
+                        
+                        {publication.authors && publication.authors.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Authors:</p>
+                            <div className="flex flex-wrap gap-2" data-testid={`text-publication-authors-${publication.id}`}>
+                              {publication.authors.map((author, authorIndex) => (
+                                <span key={authorIndex} className="text-sm">
+                                  {author.homepage ? (
+                                    <a
+                                      href={author.homepage}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                                      data-testid={`link-author-${publication.id}-${authorIndex}`}
+                                    >
+                                      {author.name}
+                                    </a>
+                                  ) : (
+                                    <span className="text-gray-700 font-medium">
+                                      {author.name}
+                                    </span>
+                                  )}
+                                  {authorIndex < publication.authors.length - 1 && (
+                                    <span className="text-gray-400 ml-1">•</span>
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {(publication.journal || publication.conference) && (
+                          <p className="text-gray-700 font-medium" data-testid={`text-publication-venue-${publication.id}`}>
+                            {publication.journal || publication.conference}
+                          </p>
+                        )}
+                        
+                        {/* Keywords - shown only on hover */}
+                        {publication.keywords && (
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <p className="text-xs font-medium text-gray-500 mb-2">Keywords:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {publication.keywords.split(',').map((keyword, i) => (
+                                <Badge key={i} variant="outline" className="text-xs">
+                                  {keyword.trim()}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Abstract - truncated, full text on hover */}
+                        {publication.abstract && (
+                          <div>
+                            <p className="text-gray-600 text-sm group-hover:hidden" data-testid={`text-publication-abstract-short-${publication.id}`}>
+                              {publication.abstract.length > 200 
+                                ? `${publication.abstract.substring(0, 200)}...` 
+                                : publication.abstract}
+                            </p>
+                            <div className="hidden group-hover:block">
+                              <p className="text-xs font-medium text-gray-500 mb-2">Abstract:</p>
+                              <p className="text-gray-600 text-sm leading-relaxed" data-testid={`text-publication-abstract-${publication.id}`}>
+                                {publication.abstract}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Hover indicator */}
+                    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="text-xs text-gray-400 flex items-center gap-1">
+                        <span>Hover to see more</span>
+                        <ExternalLink className="h-3 w-3" />
                       </p>
-                    )}
-                    {(publication.journal || publication.conference) && (
-                      <p className="text-gray-700 mb-4" data-testid={`text-publication-venue-${publication.id}`}>
-                        <strong>{publication.journal || publication.conference}</strong>
-                      </p>
-                    )}
-                    {publication.abstract && (
-                      <p className="text-gray-600 text-sm" data-testid={`text-publication-abstract-${publication.id}`}>
-                        {publication.abstract}
-                      </p>
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}

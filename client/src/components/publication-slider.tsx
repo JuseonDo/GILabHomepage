@@ -75,47 +75,51 @@ export default function PublicationSlider({ publications }: PublicationSliderPro
                 className="publication-slide w-full flex-shrink-0 px-4"
                 data-testid={`slide-${index}`}
               >
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 max-w-5xl mx-auto">
-                  <div className={`grid ${publication.imageUrl ? 'lg:grid-cols-2 gap-8' : 'grid-cols-1'} p-8`}>
+                <div className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 max-w-5xl mx-auto cursor-pointer hover:scale-[1.02] relative">
+                  {/* Hover background overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 to-purple-50/80 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
+                  
+                  <div className={`grid ${publication.imageUrl ? 'lg:grid-cols-2 gap-8' : 'grid-cols-1'} p-8 relative`}>
                     {/* Image Section */}
                     {publication.imageUrl && (
                       <div className="flex items-center justify-center">
-                        <div className="relative aspect-square w-full max-w-sm rounded-lg overflow-hidden shadow-md">
+                        <div className="relative aspect-square w-full max-w-sm rounded-lg overflow-hidden shadow-md group-hover:shadow-xl transition-shadow duration-300">
                           <img
                             src={publication.imageUrl}
                             alt={`${publication.title} illustration`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                             data-testid={`img-publication-${index}`}
                           />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300" />
                         </div>
                       </div>
                     )}
                     
                     {/* Content Section */}
-                    <div className="flex flex-col justify-center">
+                    <div className="flex flex-col justify-center space-y-4">
                       <div className="flex items-center gap-3 mb-4">
                         <Badge 
                           variant={publication.type === 'journal' ? 'default' : 'secondary'}
-                          className="text-sm"
+                          className="text-sm group-hover:bg-blue-100 group-hover:text-blue-800 transition-colors duration-300"
                           data-testid={`badge-type-${index}`}
                         >
                           {publication.type === 'journal' ? 'Journal' : 'Conference'}
                         </Badge>
-                        <Badge variant="outline" data-testid={`badge-year-${index}`}>
+                        <Badge variant="outline" className="group-hover:border-blue-300 transition-colors duration-300" data-testid={`badge-year-${index}`}>
                           {publication.year}
                         </Badge>
                       </div>
                       
-                      <h3 className="text-2xl font-bold text-gray-900 mb-4 leading-tight" data-testid={`text-title-${index}`}>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4 leading-tight group-hover:text-blue-900 transition-colors duration-300" data-testid={`text-title-${index}`}>
                         {publication.title}
                       </h3>
                       
-                      <div className="text-sm text-gray-600 mb-4" data-testid={`text-venue-${index}`}>
-                        {publication.journal || publication.conference}
+                      <div className="text-sm text-gray-600 mb-4 group-hover:text-gray-800 transition-colors duration-300" data-testid={`text-venue-${index}`}>
+                        <span className="font-medium">{publication.journal || publication.conference}</span>
                       </div>
                       
                       <div className="mb-6">
-                        <div className="text-sm text-gray-600 mb-2">Authors:</div>
+                        <div className="text-sm text-gray-500 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Authors:</div>
                         <div className="flex flex-wrap gap-2">
                           {publication.authors.map((author, authorIndex) => (
                             <span key={authorIndex} className="text-sm">
@@ -124,7 +128,7 @@ export default function PublicationSlider({ publications }: PublicationSliderPro
                                   href={author.homepage}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                                  className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
                                   data-testid={`link-author-${index}-${authorIndex}`}
                                 >
                                   {author.name}
@@ -135,12 +139,59 @@ export default function PublicationSlider({ publications }: PublicationSliderPro
                                 </span>
                               )}
                               {authorIndex < publication.authors.length - 1 && (
-                                <span className="text-gray-500 ml-2">•</span>
+                                <span className="text-gray-400 ml-1">•</span>
                               )}
                             </span>
                           ))}
                         </div>
                       </div>
+
+                      {/* Keywords - shown only on hover */}
+                      {publication.keywords && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                          <div className="text-xs font-medium text-gray-500 mb-2">Keywords:</div>
+                          <div className="flex flex-wrap gap-1">
+                            {publication.keywords.split(',').map((keyword, i) => (
+                              <Badge key={i} variant="outline" className="text-xs">
+                                {keyword.trim()}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Quick action buttons - shown on hover */}
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {publication.url && (
+                          <a
+                            href={publication.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Visit
+                          </a>
+                        )}
+                        {publication.pdfUrl && (
+                          <a
+                            href={publication.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition-colors"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            PDF
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Hover indicator */}
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
+                      <ExternalLink className="h-4 w-4 text-blue-600" />
                     </div>
                   </div>
                   
