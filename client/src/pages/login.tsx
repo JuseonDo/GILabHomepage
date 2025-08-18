@@ -37,11 +37,7 @@ export default function Login() {
 
   const loginMutation = useMutation({
     mutationFn: (data: LoginFormData) => 
-      apiRequest("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
+      apiRequest("POST", "/api/auth/login", data),
     onSuccess: () => {
       toast({
         title: "로그인 성공",

@@ -39,11 +39,7 @@ export default function Register() {
 
   const registerMutation = useMutation({
     mutationFn: (data: RegisterFormData) => 
-      apiRequest("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
+      apiRequest("POST", "/api/auth/register", data),
     onSuccess: () => {
       toast({
         title: "회원가입 성공",

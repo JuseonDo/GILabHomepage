@@ -29,9 +29,7 @@ export default function Admin() {
 
   const approveUserMutation = useMutation({
     mutationFn: (userId: string) =>
-      apiRequest(`/api/admin/approve-user/${userId}`, {
-        method: "POST",
-      }),
+      apiRequest("POST", `/api/admin/approve-user/${userId}`),
     onSuccess: () => {
       toast({
         title: "사용자 승인 완료",

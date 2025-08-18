@@ -63,16 +63,12 @@ export default function CreatePublication() {
   const createPublicationMutation = useMutation({
     mutationFn: (data: PublicationFormData) => {
       const { authors, ...publicationData } = data;
-      return apiRequest("/api/publications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          publication: publicationData,
-          authors: authors.map(author => ({
-            name: author.name,
-            homepage: author.homepage || undefined,
-          })),
-        }),
+      return apiRequest("POST", "/api/publications", {
+        publication: publicationData,
+        authors: authors.map(author => ({
+          name: author.name,
+          homepage: author.homepage || undefined,
+        })),
       });
     },
     onSuccess: () => {
