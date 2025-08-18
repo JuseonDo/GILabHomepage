@@ -77,7 +77,10 @@ export default function ResearchPage() {
     mutationFn: (data: PublicationFormData) => {
       const { authors, ...publicationData } = data;
       return apiRequest("POST", "/api/publications", {
-        publication: publicationData,
+        publication: {
+          ...publicationData,
+          year: String(publicationData.year), // Convert year to string for database
+        },
         authors: authors.map(author => ({
           name: author.name,
           homepage: author.homepage || undefined,
@@ -223,7 +226,10 @@ export default function ResearchPage() {
                                 type="number"
                                 min="1900"
                                 max={new Date().getFullYear() + 10}
-                                onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  field.onChange(value ? parseInt(value) : undefined);
+                                }}
                               />
                             </FormControl>
                             <FormMessage />
