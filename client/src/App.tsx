@@ -9,15 +9,34 @@ import HomePage from "@/pages/home";
 import MembersPage from "@/pages/members";
 import ResearchPage from "@/pages/research";
 import AccessPage from "@/pages/access";
+import LoginPage from "@/pages/login";
+import RegisterPage from "@/pages/register";
+import CreatePublicationPage from "@/pages/create-publication";
+import AdminPage from "@/pages/admin";
 import NotFound from "@/pages/not-found";
+import { useAuth } from "@/hooks/useAuth";
 
 function Router() {
+  const { isLoading, isAuthenticated } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/members" component={MembersPage} />
       <Route path="/research" component={ResearchPage} />
       <Route path="/access" component={AccessPage} />
+      <Route path="/login" component={LoginPage} />
+      <Route path="/register" component={RegisterPage} />
+      <Route path="/create-publication" component={CreatePublicationPage} />
+      <Route path="/admin" component={AdminPage} />
       <Route component={NotFound} />
     </Switch>
   );

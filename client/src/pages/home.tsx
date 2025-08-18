@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Microscope, Users, GraduationCap } from "lucide-react";
-import ResearchSlider from "@/components/research-slider";
-import type { ResearchProject } from "@shared/schema";
+import { Link } from "wouter";
+import PublicationSlider from "@/components/publication-slider";
+import type { Publication, Author } from "@shared/schema";
 
 export default function HomePage() {
-  const { data: projects = [], isLoading } = useQuery<ResearchProject[]>({
-    queryKey: ["/api/research-projects"],
+  const { data: publications = [], isLoading } = useQuery<(Publication & { authors: Author[] })[]>({
+    queryKey: ["/api/publications"],
   });
 
   return (
@@ -27,19 +28,21 @@ export default function HomePage() {
           >
             Pioneering research in artificial intelligence, machine learning, and computational sciences to shape the future of technology.
           </p>
-          <Button
-            size="lg"
-            className="bg-white text-lab-blue hover:bg-gray-100 transition-colors duration-200 transform hover:scale-105"
-            data-testid="button-explore-research"
-          >
-            Explore Our Research
-          </Button>
+          <Link href="/research">
+            <Button
+              size="lg"
+              className="bg-white text-lab-blue hover:bg-gray-100 transition-colors duration-200 transform hover:scale-105"
+              data-testid="button-explore-research"
+            >
+              Explore Our Research
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Research Showcase Slider */}
+      {/* Publications Showcase Slider */}
       {isLoading ? (
-        <div className="py-20 bg-white">
+        <div className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <div className="animate-pulse">
@@ -51,7 +54,7 @@ export default function HomePage() {
           </div>
         </div>
       ) : (
-        <ResearchSlider projects={projects} />
+        <PublicationSlider publications={publications} />
       )}
 
       {/* Features Section */}
