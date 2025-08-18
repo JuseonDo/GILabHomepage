@@ -45,10 +45,7 @@ export default function PublicationSlider({ publications }: PublicationSliderPro
 
   const updateOrderMutation = useMutation({
     mutationFn: async ({ id, order }: { id: string; order: number }) => {
-      return apiRequest(`/api/publications/${id}/order`, {
-        method: "PUT",
-        body: JSON.stringify({ order }),
-      });
+      return apiRequest(`/api/publications/${id}/order`, "PUT", { order });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/publications"] });

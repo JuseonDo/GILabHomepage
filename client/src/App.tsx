@@ -10,6 +10,7 @@ import MembersPage from "@/pages/members";
 import ResearchPage from "@/pages/research";
 import AccessPage from "@/pages/access";
 import NewsPage from "@/pages/news";
+import NewsDetailPage from "@/pages/news-detail";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 
@@ -35,6 +36,7 @@ function Router() {
       <Route path="/members" component={MembersPage} />
       <Route path="/research" component={ResearchPage} />
       <Route path="/news" component={NewsPage} />
+      <Route path="/news/:id" component={NewsDetailPage} />
       <Route path="/access" component={AccessPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
