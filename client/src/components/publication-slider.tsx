@@ -299,31 +299,7 @@ export default function PublicationSlider({ publications }: PublicationSliderPro
             </>
           )}
 
-          {/* Admin Order Management Buttons */}
-          {isAdmin && publications.length > 0 && (
-            <div className="absolute top-4 right-4 flex gap-2 z-20">
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white"
-                onClick={() => movePublication('up')}
-                disabled={updateOrderMutation.isPending}
-                data-testid="button-move-up"
-              >
-                <ArrowUp className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white"
-                onClick={() => movePublication('down')}
-                disabled={updateOrderMutation.isPending}
-                data-testid="button-move-down"
-              >
-                <ArrowDown className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+
 
           {/* Slide Indicators */}
           {publications.length > 1 && (

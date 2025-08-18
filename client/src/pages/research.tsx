@@ -3,7 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ExternalLink, Download, Brain, Bot, Dna, Plus, X, Trash2 } from "lucide-react";
+import { ExternalLink, Download, Brain, Bot, Dna, Plus, X, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -87,11 +89,49 @@ export default function ResearchPage() {
     defaultValues: {
       name: "",
       description: "",
-      parentId: "",
       imageUrl: "",
       order: 0,
     },
   });
+
+  // Publication order management
+  const updateOrderMutation = useMutation({
+    mutationFn: async ({ id, order }: { id: string; order: number }) => {
+      return apiRequest(`/api/publications/${id}/order`, "PUT", { order });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/publications"] });
+      toast({
+        title: "Order updated",
+        description: "Publication order has been updated successfully.",
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to update publication order:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update publication order. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const movePublication = (index: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && index === 0) ||
+      (direction === 'down' && index === publications.length - 1)
+    ) {
+      return;
+    }
+
+    const current = publications[index];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const target = publications[targetIndex];
+
+    // Swap orders
+    updateOrderMutation.mutate({ id: current.id, order: target.order });
+    updateOrderMutation.mutate({ id: target.id, order: current.order });
+  };
 
   const publicationType = form.watch("type");
 
@@ -506,7 +546,35 @@ export default function ResearchPage() {
                           <FormItem className="md:col-span-2">
                             <FormLabel>설명</FormLabel>
                             <FormControl>
-                              <Textarea {...field} placeholder="연구분야에 대한 설명을 입력하세요" />
+                              <div className="min-h-[200px]">
+                                <ReactQuill
+                                  theme="snow"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  modules={{
+                                    toolbar: [
+                                      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                      ['bold', 'italic', 'underline', 'strike'],
+                                      [{ 'color': [] }, { 'background': [] }],
+                                      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                      [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                      [{ 'align': [] }],
+                                      ['link'],
+                                      ['clean']
+                                    ],
+                                  }}
+                                  formats={[
+                                    'header',
+                                    'bold', 'italic', 'underline', 'strike',
+                                    'color', 'background',
+                                    'list', 'bullet',
+                                    'indent',
+                                    'align',
+                                    'link'
+                                  ]}
+                                  placeholder="연구분야에 대한 설명을 입력하세요"
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>

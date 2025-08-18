@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { MapPin, Save, Camera, Globe, Clock, Mail, Phone, Building, Users } from "lucide-react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -268,12 +270,35 @@ export default function Settings() {
                         <FormItem>
                           <FormLabel>Lab Description</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="Brief description of your lab's mission and work..."
-                              className="min-h-[100px]"
-                              {...field} 
-                              data-testid="textarea-description"
-                            />
+                            <div className="min-h-[200px]">
+                              <ReactQuill
+                                theme="snow"
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                modules={{
+                                  toolbar: [
+                                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                    ['bold', 'italic', 'underline', 'strike'],
+                                    [{ 'color': [] }, { 'background': [] }],
+                                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                    [{ 'align': [] }],
+                                    ['link'],
+                                    ['clean']
+                                  ],
+                                }}
+                                formats={[
+                                  'header',
+                                  'bold', 'italic', 'underline', 'strike',
+                                  'color', 'background',
+                                  'list', 'bullet',
+                                  'indent',
+                                  'align',
+                                  'link'
+                                ]}
+                                placeholder="Brief description of your lab's mission and work..."
+                              />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -379,23 +404,67 @@ export default function Settings() {
                     )}
                   />
 
+                  <FormField
+                    control={form.control}
+                    name="piPhoto"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Camera className="w-4 h-4" />
+                          Photo URL
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://example.com/photo.jpg" {...field} data-testid="input-pi-photo" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="piBio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bio</FormLabel>
+                        <FormControl>
+                          <div className="min-h-[200px]">
+                            <ReactQuill
+                              theme="snow"
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              modules={{
+                                toolbar: [
+                                  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                  ['bold', 'italic', 'underline', 'strike'],
+                                  [{ 'color': [] }, { 'background': [] }],
+                                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                  [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                  [{ 'align': [] }],
+                                  ['link'],
+                                  ['clean']
+                                ],
+                              }}
+                              formats={[
+                                'header',
+                                'bold', 'italic', 'underline', 'strike',
+                                'color', 'background',
+                                'list', 'bullet',
+                                'indent',
+                                'align',
+                                'link'
+                              ]}
+                              placeholder="Brief biography of the principal investigator..."
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <div className="md:col-span-2">
-                    <FormField
-                      control={form.control}
-                      name="piPhoto"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Camera className="w-4 h-4" />
-                            Photo URL
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://example.com/photo.jpg" {...field} data-testid="input-pi-photo" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* Empty div to maintain grid layout */}
                   </div>
                 </CardContent>
               </Card>

@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Linkedin, Mail, ExternalLink, Plus, X, User, Phone, Edit } from "lucide-react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -450,7 +452,35 @@ export default function MembersPage() {
                           <FormItem className="md:col-span-2">
                             <FormLabel>소개</FormLabel>
                             <FormControl>
-                              <Textarea {...field} placeholder="멤버 소개를 입력하세요" rows={4} />
+                              <div className="min-h-[200px]">
+                                <ReactQuill
+                                  theme="snow"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  modules={{
+                                    toolbar: [
+                                      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                      ['bold', 'italic', 'underline', 'strike'],
+                                      [{ 'color': [] }, { 'background': [] }],
+                                      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                      [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                      [{ 'align': [] }],
+                                      ['link'],
+                                      ['clean']
+                                    ],
+                                  }}
+                                  formats={[
+                                    'header',
+                                    'bold', 'italic', 'underline', 'strike',
+                                    'color', 'background',
+                                    'list', 'bullet',
+                                    'indent',
+                                    'align',
+                                    'link'
+                                  ]}
+                                  placeholder="멤버 소개를 입력하세요"
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
