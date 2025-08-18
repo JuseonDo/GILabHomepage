@@ -129,7 +129,12 @@ export default function MembersPage() {
 
   const updateProfessorMutation = useMutation({
     mutationFn: (data: ProfessorFormData) => {
-      return apiRequest("PUT", "/api/lab-info", data);
+      // Merge professor data with existing labInfo
+      const updateData = {
+        ...labInfo,
+        ...data,
+      };
+      return apiRequest("PUT", "/api/lab-info", updateData);
     },
     onSuccess: () => {
       toast({
