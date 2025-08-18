@@ -12,7 +12,7 @@ import AccessPage from "@/pages/access";
 import NewsPage from "@/pages/news";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
-import CreatePublicationPage from "@/pages/create-publication";
+
 import AdminPage from "@/pages/admin";
 import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
@@ -38,7 +38,7 @@ function Router() {
       <Route path="/access" component={AccessPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
-      <Route path="/create-publication" component={CreatePublicationPage} />
+
       <Route path="/admin" component={AdminPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />

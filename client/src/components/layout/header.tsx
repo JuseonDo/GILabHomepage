@@ -91,14 +91,7 @@ export default function Header() {
               <div className="flex items-center space-x-4 ml-6 border-l border-gray-200 pl-6">
                 {isAuthenticated && user ? (
                   <>
-                    {user.isAdmin && (
-                      <Link href="/create-publication">
-                        <Button size="sm" data-testid="button-create-publication">
-                          <Plus className="h-4 w-4 mr-1" />
-                          논문 게시
-                        </Button>
-                      </Link>
-                    )}
+
                     
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -208,23 +201,25 @@ export default function Header() {
                   <div className="px-3 py-2 text-sm text-gray-500">
                     {user.firstName} {user.lastName}
                   </div>
-                  <Link
-                    href="/create-publication"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-lab-blue hover:bg-gray-50"
-                    data-testid="link-mobile-create-publication"
-                  >
-                    논문 게시
-                  </Link>
                   {user.isAdmin && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-lab-blue hover:bg-gray-50"
-                      data-testid="link-mobile-admin"
-                    >
-                      관리자 패널
-                    </Link>
+                    <>
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-lab-blue hover:bg-gray-50"
+                        data-testid="link-mobile-admin"
+                      >
+                        관리자 패널
+                      </Link>
+                      <Link
+                        href="/settings"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-lab-blue hover:bg-gray-50"
+                        data-testid="link-mobile-settings"
+                      >
+                        실험실 설정
+                      </Link>
+                    </>
                   )}
                   <button
                     onClick={() => {
