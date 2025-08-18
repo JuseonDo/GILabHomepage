@@ -565,20 +565,7 @@ export default function Research() {
                       <CardTitle className="text-xl text-gray-900 pr-12" data-testid={`text-area-title-${area.id}`}>
                         {area.name}
                       </CardTitle>
-                      {isAdmin && (
-                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => startEditingArea(area)}
-                            className="hover:bg-green-100 shadow-lg bg-white/90"
-                            title="편집"
-                            data-testid={`button-edit-area-${area.id}`}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
+
                     </CardHeader>
                     <CardContent>
                       <div 
@@ -1153,33 +1140,7 @@ export default function Research() {
                           {publication.year}
                         </span>
                       </div>
-                      <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        {isAdmin && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => movePublicationMutation.mutate({ id: publication.id, direction: 'up' })}
-                              disabled={index === 0 || movePublicationMutation.isPending}
-                              className="hover:bg-gray-100"
-                              title="위로 이동"
-                              data-testid={`button-move-up-${publication.id}`}
-                            >
-                              <ChevronUp className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => movePublicationMutation.mutate({ id: publication.id, direction: 'down' })}
-                              disabled={index === sortedPublications.length - 1 || movePublicationMutation.isPending}
-                              className="hover:bg-gray-100"
-                              title="아래로 이동"
-                              data-testid={`button-move-down-${publication.id}`}
-                            >
-                              <ChevronDown className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
+                      <div className="flex space-x-2">
                         {publication.url && (
                           <Button
                             variant="ghost"
@@ -1204,18 +1165,6 @@ export default function Research() {
                             <a href={publication.pdfUrl} target="_blank" rel="noopener noreferrer" title="Download PDF">
                               <Download className="h-4 w-4" />
                             </a>
-                          </Button>
-                        )}
-                        {isAdmin && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => startEditingPublication(publication)}
-                            className="hover:bg-green-100"
-                            title="편집"
-                            data-testid={`button-edit-publication-${publication.id}`}
-                          >
-                            <Edit className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -1285,15 +1234,24 @@ export default function Research() {
                           </div>
                         )}
                         
-                        {/* Abstract shown on hover */}
+                        {/* Abstract - truncated by default, full on hover */}
                         {publication.abstract && (
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 mt-4 border-t border-gray-200 pt-4">
+                          <div className="mt-4">
                             <p className="text-xs font-medium text-gray-500 mb-2">Abstract:</p>
-                            <div 
-                              className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg border-l-4 border-blue-300 max-h-32 overflow-y-auto"
-                              data-testid={`text-publication-abstract-${publication.id}`}
-                              dangerouslySetInnerHTML={{ __html: publication.abstract }}
-                            />
+                            <div className="relative">
+                              {/* Truncated version - visible by default */}
+                              <div 
+                                className="text-sm text-gray-700 line-clamp-3 group-hover:opacity-0 transition-opacity duration-300"
+                                data-testid={`text-publication-abstract-truncated-${publication.id}`}
+                                dangerouslySetInnerHTML={{ __html: publication.abstract }}
+                              />
+                              {/* Full version - visible on hover */}
+                              <div 
+                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm text-gray-700 bg-gray-50 p-4 rounded-lg border-l-4 border-blue-300 max-h-32 overflow-y-auto"
+                                data-testid={`text-publication-abstract-${publication.id}`}
+                                dangerouslySetInnerHTML={{ __html: publication.abstract }}
+                              />
+                            </div>
                           </div>
                         )}
                       </div>

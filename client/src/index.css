@@ -183,6 +183,51 @@
   to { opacity: 1; }
 }
 
+/* ReactQuill 스타일 강제 적용 */
+.ql-editor {
+  min-height: 150px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.ql-toolbar {
+  border-top: 1px solid #ccc !important;
+  border-left: 1px solid #ccc !important;
+  border-right: 1px solid #ccc !important;
+  background: #f3f4f6 !important;
+  padding: 8px !important;
+}
+
+.ql-container {
+  border-bottom: 1px solid #ccc !important;
+  border-left: 1px solid #ccc !important;
+  border-right: 1px solid #ccc !important;
+  font-family: inherit !important;
+}
+
+.ql-toolbar .ql-stroke {
+  fill: none !important;
+  stroke: #444 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  stroke-width: 2 !important;
+}
+
+.ql-toolbar .ql-fill {
+  fill: #444 !important;
+  stroke: none !important;
+}
+
+.ql-toolbar button:hover {
+  background-color: #e5e7eb !important;
+  border-radius: 4px !important;
+}
+
+.ql-toolbar button.ql-active {
+  background-color: #ddd6fe !important;
+  border-radius: 4px !important;
+}
+
 @keyframes scaleHover {
   from { transform: scale(1); }
   to { transform: scale(1.05); }
