@@ -11,7 +11,7 @@ import type {
   ResearchArea, InsertResearchArea,
   LabInfo, InsertLabInfo
 } from '@shared/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, isNull } from 'drizzle-orm';
 import { hashPassword, verifyPassword } from './auth';
 
 export interface IStorage {
@@ -37,6 +37,7 @@ export interface IStorage {
   getAllPublicationsWithAuthors(): Promise<(Publication & { authors: Author[] })[]>;
   getPublicationsByYear(year: string): Promise<(Publication & { authors: Author[] })[]>;
   createPublication(publication: InsertPublication, authorId: string, authorsList: InsertAuthor[]): Promise<Publication>;
+  updatePublication(id: string, publication: Partial<InsertPublication>): Promise<Publication | undefined>;
   updatePublicationOrder(id: string, order: number): Promise<Publication | undefined>;
   
   // News management
@@ -225,6 +226,15 @@ export class DatabaseStorage implements IStorage {
     return publication;
   }
 
+  async updatePublication(id: string, publicationData: Partial<InsertPublication>): Promise<Publication | undefined> {
+    const [publication] = await db
+      .update(publications)
+      .set(publicationData)
+      .where(eq(publications.id, id))
+      .returning();
+    return publication;
+  }
+
   async updatePublicationOrder(id: string, order: number): Promise<Publication | undefined> {
     const [publication] = await db
       .update(publications)
@@ -337,7 +347,7 @@ export class DatabaseStorage implements IStorage {
         .orderBy(researchAreas.order);
     } else {
       return db.select().from(researchAreas)
-        .where(and(eq(researchAreas.parentId, null), eq(researchAreas.isActive, true)))
+        .where(and(isNull(researchAreas.parentId), eq(researchAreas.isActive, true)))
         .orderBy(researchAreas.order);
     }
   }
@@ -358,7 +368,7 @@ export class DatabaseStorage implements IStorage {
   async updateResearchArea(id: string, areaData: Partial<InsertResearchArea>): Promise<ResearchArea | undefined> {
     const [area] = await db
       .update(researchAreas)
-      .set({ ...areaData, updatedAt: new Date() })
+      .set(areaData)
       .where(eq(researchAreas.id, id))
       .returning();
     return area;

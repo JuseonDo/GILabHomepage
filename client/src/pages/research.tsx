@@ -23,6 +23,8 @@ type ResearchAreaFormData = z.infer<typeof insertResearchAreaSchema>;
 export default function Research() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAreaForm, setShowAreaForm] = useState(false);
+  const [editingPublication, setEditingPublication] = useState<string | null>(null);
+  const [editingArea, setEditingArea] = useState<string | null>(null);
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const { toast } = useToast();
@@ -60,6 +62,14 @@ export default function Research() {
       description: "",
       parentId: undefined,
     },
+  });
+
+  const editPublicationForm = useForm<PublicationFormData>({
+    resolver: zodResolver(insertPublicationSchema),
+  });
+
+  const editAreaForm = useForm<ResearchAreaFormData>({
+    resolver: zodResolver(insertResearchAreaSchema),
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -149,12 +159,101 @@ export default function Research() {
     },
   });
 
+  const updatePublicationMutation = useMutation({
+    mutationFn: async (data: { id: string; publication: PublicationFormData }) => {
+      return apiRequest(`/api/publications/${data.id}`, "PUT", data.publication);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/publications"] });
+      setEditingPublication(null);
+      toast({
+        title: "논문 수정 완료",
+        description: "논문이 성공적으로 수정되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "논문 수정 실패",
+        description: error.message || "논문 수정에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateResearchAreaMutation = useMutation({
+    mutationFn: async (data: { id: string; area: ResearchAreaFormData }) => {
+      return apiRequest(`/api/research-areas/${data.id}`, "PUT", data.area);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/research-areas"] });
+      setEditingArea(null);
+      toast({
+        title: "연구분야 수정 완료",
+        description: "연구분야가 성공적으로 수정되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "연구분야 수정 실패",
+        description: error.message || "연구분야 수정에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: PublicationFormData) => {
     createPublicationMutation.mutate(data);
   };
 
   const onAreaSubmit = (data: ResearchAreaFormData) => {
     createResearchAreaMutation.mutate(data);
+  };
+
+  const onEditPublicationSubmit = (data: PublicationFormData) => {
+    if (editingPublication) {
+      updatePublicationMutation.mutate({ id: editingPublication, publication: data });
+    }
+  };
+
+  const onEditAreaSubmit = (data: ResearchAreaFormData) => {
+    if (editingArea) {
+      updateResearchAreaMutation.mutate({ id: editingArea, area: data });
+    }
+  };
+
+  const startEditingPublication = (publication: Publication) => {
+    setEditingPublication(publication.id);
+    editPublicationForm.reset({
+      title: publication.title,
+      authors: publication.authors || [{ name: "", homepage: "" }],
+      type: publication.type,
+      year: publication.year,
+      journal: publication.journal || "",
+      conference: publication.conference || "",
+      abstract: publication.abstract || "",
+      url: publication.url || "",
+      pdfUrl: publication.pdfUrl || "",
+      imageUrl: publication.imageUrl || "",
+    });
+  };
+
+  const startEditingArea = (area: ResearchArea) => {
+    setEditingArea(area.id);
+    editAreaForm.reset({
+      name: area.name,
+      description: area.description || "",
+      parentId: area.parentId || undefined,
+    });
+  };
+
+  const cancelEditingPublication = () => {
+    setEditingPublication(null);
+    editPublicationForm.reset();
+  };
+
+  const cancelEditingArea = () => {
+    setEditingArea(null);
+    editAreaForm.reset();
   };
 
   const mainAreas = researchAreas.filter(area => !area.parentId);
@@ -322,6 +421,122 @@ export default function Research() {
           </div>
         )}
 
+        {/* Edit Research Area Form */}
+        {editingArea && isAdmin && (
+          <div className="mb-16">
+            <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-2xl">연구분야 수정</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Form {...editAreaForm}>
+                  <form onSubmit={editAreaForm.handleSubmit(onEditAreaSubmit)} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={editAreaForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>연구분야명 *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="AI 연구실" {...field} data-testid="input-edit-area-name" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={editAreaForm.control}
+                        name="parentId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>상위 연구분야</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ""}>
+                              <FormControl>
+                                <SelectTrigger data-testid="select-edit-area-parent">
+                                  <SelectValue placeholder="상위 분야 선택 (선택사항)" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="">독립 연구분야</SelectItem>
+                                {mainAreas.map((area) => (
+                                  <SelectItem key={area.id} value={area.id}>
+                                    {area.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={editAreaForm.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>설명</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <ReactQuill
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                modules={{
+                                  toolbar: [
+                                    [{ 'header': [1, 2, 3, false] }],
+                                    ['bold', 'italic', 'underline', 'strike'],
+                                    [{ 'color': [] }, { 'background': [] }],
+                                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                    [{ 'align': [] }],
+                                    ['link'],
+                                    ['clean']
+                                  ],
+                                }}
+                                formats={[
+                                  'header',
+                                  'bold', 'italic', 'underline', 'strike',
+                                  'color', 'background',
+                                  'list', 'bullet',
+                                  'indent',
+                                  'align',
+                                  'link'
+                                ]}
+                                placeholder="연구분야에 대한 설명을 입력하세요"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex gap-4 pt-6">
+                      <Button 
+                        type="submit" 
+                        disabled={updateResearchAreaMutation.isPending}
+                        data-testid="button-submit-edit-area"
+                      >
+                        {updateResearchAreaMutation.isPending ? "수정 중..." : "수정 완료"}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={cancelEditingArea}
+                      >
+                        취소
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Research Areas */}
         <div className="mb-20">
           <div className="flex justify-between items-center mb-10">
@@ -345,11 +560,24 @@ export default function Research() {
               {mainAreas.map((area) => {
                 const subAreas = getSubAreas(area.id);
                 return (
-                  <Card key={area.id} className="hover:shadow-lg transition-shadow" data-testid={`card-research-area-${area.id}`}>
-                    <CardHeader>
-                      <CardTitle className="text-xl text-gray-900" data-testid={`text-area-title-${area.id}`}>
+                  <Card key={area.id} className="hover:shadow-lg transition-shadow group" data-testid={`card-research-area-${area.id}`}>
+                    <CardHeader className="relative">
+                      <CardTitle className="text-xl text-gray-900 pr-12" data-testid={`text-area-title-${area.id}`}>
                         {area.name}
                       </CardTitle>
+                      {isAdmin && (
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEditingArea(area)}
+                            className="hover:bg-green-100"
+                            data-testid={`button-edit-area-${area.id}`}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </CardHeader>
                     <CardContent>
                       <div 
@@ -676,6 +904,230 @@ export default function Research() {
             </div>
           )}
 
+          {/* Edit Publication Form */}
+          {editingPublication && isAdmin && (
+            <div className="mb-16">
+              <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-2xl">논문 수정</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Form {...editPublicationForm}>
+                    <form onSubmit={editPublicationForm.handleSubmit(onEditPublicationSubmit)} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={editPublicationForm.control}
+                          name="title"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>제목 *</FormLabel>
+                              <FormControl>
+                                <div className="min-h-[100px]">
+                                  <ReactQuill
+                                    theme="snow"
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    modules={{
+                                      toolbar: [
+                                        ['bold', 'italic', 'underline'],
+                                        [{ 'color': [] }],
+                                        ['clean']
+                                      ],
+                                    }}
+                                    formats={[
+                                      'bold', 'italic', 'underline',
+                                      'color'
+                                    ]}
+                                    placeholder="논문 제목을 입력하세요"
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={editPublicationForm.control}
+                          name="type"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>유형 *</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="논문 유형 선택" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="journal">저널 논문</SelectItem>
+                                  <SelectItem value="conference">학회 논문</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={editPublicationForm.control}
+                          name="year"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>출간 연도 *</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field}
+                                  type="number"
+                                  min="1900"
+                                  max={new Date().getFullYear() + 10}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    field.onChange(value ? parseInt(value) : undefined);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {editPublicationForm.watch("type") === "journal" && (
+                          <FormField
+                            control={editPublicationForm.control}
+                            name="journal"
+                            render={({ field }) => (
+                              <FormItem className="md:col-span-2">
+                                <FormLabel>저널명</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="저널명을 입력하세요" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+
+                        {editPublicationForm.watch("type") === "conference" && (
+                          <FormField
+                            control={editPublicationForm.control}
+                            name="conference"
+                            render={({ field }) => (
+                              <FormItem className="md:col-span-2">
+                                <FormLabel>학회명</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="학회명을 입력하세요" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+
+                        <FormField
+                          control={editPublicationForm.control}
+                          name="url"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>논문 URL</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="https://example.com/paper" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={editPublicationForm.control}
+                          name="pdfUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>PDF URL</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="https://example.com/paper.pdf" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={editPublicationForm.control}
+                          name="imageUrl"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>이미지 URL</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="https://example.com/image.jpg" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={editPublicationForm.control}
+                        name="abstract"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>초록</FormLabel>
+                            <FormControl>
+                              <div className="min-h-[200px]">
+                                <ReactQuill
+                                  theme="snow"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  modules={{
+                                    toolbar: [
+                                      [{ 'header': [1, 2, 3, false] }],
+                                      ['bold', 'italic', 'underline', 'strike'],
+                                      [{ 'color': [] }, { 'background': [] }],
+                                      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                      ['link'],
+                                      ['clean']
+                                    ],
+                                  }}
+                                  formats={[
+                                    'header',
+                                    'bold', 'italic', 'underline', 'strike',
+                                    'color', 'background',
+                                    'list', 'bullet',
+                                    'link'
+                                  ]}
+                                  placeholder="논문의 초록을 입력하세요"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="flex gap-4 pt-6">
+                        <Button 
+                          type="submit" 
+                          disabled={updatePublicationMutation.isPending}
+                          data-testid="button-submit-edit-publication"
+                        >
+                          {updatePublicationMutation.isPending ? "수정 중..." : "수정 완료"}
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline"
+                          onClick={cancelEditingPublication}
+                        >
+                          취소
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {sortedPublications.length > 0 ? (
             <div className="space-y-6">
               {sortedPublications.map((publication, index) => (
@@ -757,6 +1209,7 @@ export default function Research() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => startEditingPublication(publication)}
                             className="hover:bg-green-100"
                             data-testid={`button-edit-publication-${publication.id}`}
                           >

@@ -195,6 +195,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update publication (Admin only)
+  app.put("/api/publications/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const publicationData = insertPublicationSchema.partial().parse(req.body);
+      const publication = await storage.updatePublication(req.params.id, publicationData);
+      if (!publication) {
+        return res.status(404).json({ message: "Publication not found" });
+      }
+      res.json(publication);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid input data", errors: error.errors });
+      }
+      console.error("Failed to update publication:", error);
+      res.status(500).json({ message: "Failed to update publication" });
+    }
+  });
+
   // Update publication order (Admin only)
   app.put("/api/publications/:id/order", requireAuth, requireAdmin, async (req, res) => {
     try {
@@ -444,16 +462,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Research Areas API
-  app.get("/api/research-areas", async (req, res) => {
-    try {
-      const areas = await storage.getAllResearchAreas();
-      res.json(areas);
-    } catch (error) {
-      console.error("Failed to fetch research areas:", error);
-      res.status(500).json({ message: "Failed to fetch research areas" });
-    }
-  });
+
 
   app.post("/api/research-areas", requireAuth, async (req, res) => {
     try {
