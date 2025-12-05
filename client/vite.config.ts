@@ -12,8 +12,8 @@ export default defineConfig({
       '@assets': path.resolve(import.meta.dirname, 'src', 'assets'),
     },
   },
-  // GitHub Pages
-  base: '/',
+  // GitHub Pages - 레포지토리 이름 필수
+  base: '/GILab_Home_Page/',
   build: {
     // docs 폴더로 빌드 (루트에 생성)
     outDir: '../docs',
