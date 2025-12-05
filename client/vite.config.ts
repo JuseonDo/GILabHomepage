@@ -12,11 +12,11 @@ export default defineConfig({
       '@assets': path.resolve(import.meta.dirname, 'src', 'assets'),
     },
   },
-  // GitHub Pages base URL - 레포지토리 이름이 루트가 아닌 경우 수정
-  // 예: base: '/GILab_Home_Page/'
+  // GitHub Pages
   base: '/',
   build: {
-    outDir: 'dist',
+    // docs 폴더로 빌드 (루트에 생성)
+    outDir: '../docs',
     emptyOutDir: true,
   },
   server: {
