@@ -58,6 +58,7 @@ class PublicationBase(BaseModel):
     pdfUrl: Optional[str] = None
     imageUrl: Optional[str] = None
     order: Optional[int] = 0
+    displayOrder: Optional[int] = None
 
 class AuthorBase(BaseModel):
     name: str

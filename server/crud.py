@@ -152,6 +152,50 @@ def update_publication_order(db: Session, publication_id: str, order: int) -> Op
     db.refresh(db_publication)
     return db_publication
 
+def move_publication_up(db: Session, publication_id: str) -> bool:
+    db_publication = db.query(models.Publication).filter(models.Publication.id == publication_id).first()
+    if not db_publication:
+        return False
+    
+    # 같은 년도 내에서 현재 논문보다 displayOrder가 작은 것 중 가장 큰 것을 찾음
+    target_publication = (
+        db.query(models.Publication)
+        .filter(models.Publication.year == db_publication.year)
+        .filter(models.Publication.displayOrder < db_publication.displayOrder)
+        .order_by(desc(models.Publication.displayOrder))
+        .first()
+    )
+    
+    if not target_publication:
+        return False  # 이미 최상단
+    
+    # 순서 교체
+    db_publication.displayOrder, target_publication.displayOrder = target_publication.displayOrder, db_publication.displayOrder
+    db.commit()
+    return True
+
+def move_publication_down(db: Session, publication_id: str) -> bool:
+    db_publication = db.query(models.Publication).filter(models.Publication.id == publication_id).first()
+    if not db_publication:
+        return False
+    
+    # 같은 년도 내에서 현재 논문보다 displayOrder가 큰 것 중 가장 작은 것을 찾음
+    target_publication = (
+        db.query(models.Publication)
+        .filter(models.Publication.year == db_publication.year)
+        .filter(models.Publication.displayOrder > db_publication.displayOrder)
+        .order_by(asc(models.Publication.displayOrder))
+        .first()
+    )
+    
+    if not target_publication:
+        return False  # 이미 최하단
+    
+    # 순서 교체
+    db_publication.displayOrder, target_publication.displayOrder = target_publication.displayOrder, db_publication.displayOrder
+    db.commit()
+    return True
+
 def delete_publication(db: Session, publication_id: str) -> bool:
     db_publication = db.query(models.Publication).filter(models.Publication.id == publication_id).first()
     if not db_publication:

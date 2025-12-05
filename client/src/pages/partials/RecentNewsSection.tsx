@@ -1,24 +1,23 @@
+// src/pages/partials/RecentNewsSection.tsx
 import { useEffect, useLayoutEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { getNews } from "@/lib/staticApi";
 
 export default function RecentNewsSection() {
   const [reveal, setReveal] = useState(false);
-
-  const newsQuery = useQuery({
-    queryKey: ["/news", { limit: 3 }],
-    queryFn: async () => {
-      const r = await fetch("/api/news?limit=3");
-      if (!r.ok) throw new Error("Failed to fetch news");
-      return r.json();
-    },
-    enabled: false,
-    staleTime: 60_000,
-    refetchOnWindowFocus: false,
-  });
+  const [newsData, setNewsData] = useState<any[] | null>(null);
 
   useEffect(() => {
-    const refetch = () => newsQuery.refetch();
+    const refetch = async () => {
+      try {
+        const news = await getNews();
+        setNewsData(news.slice(0, 3));
+      } catch (e) {
+        console.error("Failed to fetch news:", e);
+        setNewsData([]);
+      }
+    };
+
     const id =
       "requestIdleCallback" in window
         ? (window as any).requestIdleCallback(refetch)
@@ -29,7 +28,6 @@ export default function RecentNewsSection() {
     };
   }, []);
 
-  // 첫 등장 애니메이션
   useLayoutEffect(() => {
     let raf1 = 0,
       raf2 = 0;
@@ -53,7 +51,7 @@ export default function RecentNewsSection() {
       ].join(" ")}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {!newsQuery.data ? (
+        {!newsData ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse">
@@ -72,7 +70,7 @@ export default function RecentNewsSection() {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              {newsQuery.data.map((n: any) => (
+              {newsData.map((n: any) => (
                 <Link key={n.id} href={`/news/${n.id}`} className="block">
                   <div className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
                     {n.imageUrl && (
@@ -103,11 +101,6 @@ export default function RecentNewsSection() {
                             day: 'numeric'
                           })}
                         </span>
-                        {n.author && (
-                          <span>
-                            {n.author.firstName} {n.author.lastName}
-                          </span>
-                        )}
                       </div>
                     </div>
                   </div>

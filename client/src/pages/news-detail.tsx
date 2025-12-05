@@ -1,18 +1,39 @@
-import { useQuery } from "@tanstack/react-query";
+// client/src/pages/news-detail.tsx
+import { useEffect, useState } from "react";
 import { useParams, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Calendar, ArrowLeft, User } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import type { News } from "@/shared/schema";
+import { getNewsById } from "@/lib/staticApi";
+
+type News = {
+  id: string;
+  title: string;
+  content: string;
+  summary?: string;
+  imageUrl?: string;
+  publishedAt: string;
+};
 
 export default function NewsDetailPage() {
   const { id } = useParams<{ id: string }>();
-  
-  const { data: newsItem, isLoading, error } = useQuery<News>({
-    queryKey: ["/news", id],
-    queryFn: () => apiRequest("GET", `/news/${id}`),
-    enabled: !!id,
-  });
+  const [newsItem, setNewsItem] = useState<News | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (!id) return;
+      try {
+        const data = await getNewsById(id);
+        setNewsItem(data);
+      } catch (e: any) {
+        setError(e?.message || "Failed to load news");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, [id]);
 
   if (error) {
     return (
@@ -72,7 +93,7 @@ export default function NewsDetailPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="mb-8">
           <Link href="/news">
-            <Button variant="outline" size="sm" data-testid="button-back-to-news">
+            <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to News
             </Button>
@@ -86,7 +107,6 @@ export default function NewsDetailPage() {
                 src={newsItem.imageUrl}
                 alt={newsItem.title}
                 className="w-full h-full object-cover"
-                data-testid="img-news-hero"
               />
             </div>
           )}
@@ -96,31 +116,28 @@ export default function NewsDetailPage() {
               <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  <span data-testid="text-news-date">
-                    {new Date(newsItem.publishedAt).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
+                  <span>
+                    {new Date(newsItem.publishedAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
                     })}
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <User className="h-4 w-4" />
-                  <span data-testid="text-news-author">
-                    GI Lab
-                  </span>
+                  <span>GI Lab</span>
                 </div>
               </div>
 
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4" data-testid="text-news-title">
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
                 {newsItem.title}
               </h1>
             </header>
 
-            <div 
+            <div
               className="prose prose-lg max-w-none prose-blue prose-headings:text-gray-900 prose-a:text-blue-600 hover:prose-a:text-blue-800"
               dangerouslySetInnerHTML={{ __html: newsItem.content }}
-              data-testid="content-news-body"
             />
           </div>
         </article>

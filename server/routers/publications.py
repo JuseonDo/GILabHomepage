@@ -73,6 +73,34 @@ async def update_publication_order(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Publication not found")
     return schemas.PublicationResponse.from_orm(db_publication)
 
+@router.post("/{publication_id}/move-up")
+async def move_publication_up(
+    publication_id: str,
+    db: Session = Depends(database.get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    if not current_user.isAdmin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    
+    success = crud.move_publication_up(db, publication_id)
+    if not success:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Publication not found or cannot move up")
+    return {"message": "Publication moved up successfully"}
+
+@router.post("/{publication_id}/move-down")
+async def move_publication_down(
+    publication_id: str,
+    db: Session = Depends(database.get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    if not current_user.isAdmin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    
+    success = crud.move_publication_down(db, publication_id)
+    if not success:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Publication not found or cannot move down")
+    return {"message": "Publication moved down successfully"}
+
 @router.delete("/{publication_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_publication(
     publication_id: str,

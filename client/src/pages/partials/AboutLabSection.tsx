@@ -1,25 +1,26 @@
+// src/pages/partials/AboutLabSection.tsx
 import { useEffect, useLayoutEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import type { LabInfo } from "@/shared/schema";
+import { getLabInfo } from "@/lib/staticApi";
+
+type LabInfo = {
+  labName?: string;
+  description?: string;
+} | null;
 
 export default function AboutLabSection() {
   const [reveal, setReveal] = useState(false);
+  const [labInfo, setLabInfo] = useState<LabInfo>(null);
 
-  const labInfoQuery = useQuery<LabInfo | null>({
-    queryKey: ["/lab-info"],
-    queryFn: async () => {
-      const r = await fetch("/api/lab-info");
-      if (!r.ok) throw new Error("Failed to fetch lab info");
-      return r.json();
-    },
-    enabled: false,
-    staleTime: 60_000,
-    refetchOnWindowFocus: false,
-  });
-
-  // idle 타이밍에 fetch
   useEffect(() => {
-    const refetch = () => labInfoQuery.refetch();
+    const refetch = async () => {
+      try {
+        const data = await getLabInfo();
+        setLabInfo(data);
+      } catch (e) {
+        console.error("Failed to fetch lab info:", e);
+      }
+    };
+
     const id =
       "requestIdleCallback" in window
         ? (window as any).requestIdleCallback(refetch)
@@ -30,7 +31,6 @@ export default function AboutLabSection() {
     };
   }, []);
 
-  // 첫 등장 애니메이션: 한 프레임 뒤에 reveal
   useLayoutEffect(() => {
     let raf1 = 0,
       raf2 = 0;
@@ -42,8 +42,6 @@ export default function AboutLabSection() {
       cancelAnimationFrame(raf2);
     };
   }, []);
-
-  const labInfo = labInfoQuery.data;
 
   return (
     <div
@@ -60,15 +58,14 @@ export default function AboutLabSection() {
           <div className="h-64 bg-gray-100 rounded animate-pulse" />
         ) : (
           <div className="text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-              About Our Lab
-            </h2>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">About Our Lab</h2>
             <div className="max-w-3xl mx-auto">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                Generative Intelligence Lab
+                {labInfo.labName || "Generative Intelligence Lab"}
               </h3>
               <p className="text-gray-600 leading-relaxed text-lg">
-                Welcome to the Generative Intelligence Lab at Chungnam National University. Our lab performs cutting-edge research in applied problems in natural language processing.
+                Welcome to the Generative Intelligence Lab at Chungnam National University. Our lab performs cutting-edge
+                research in applied problems in natural language processing.
               </p>
             </div>
           </div>
